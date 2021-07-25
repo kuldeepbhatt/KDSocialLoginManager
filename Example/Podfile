@@ -1,0 +1,19 @@
+
+# Install------------------------------------------
+install! 'cocoapods',
+generate_multiple_pod_projects: true,
+incremental_installation: true
+
+use_frameworks!
+inhibit_all_warnings!
+supports_swift_versions '>= 5.0'
+
+platform :ios, '9.0'
+
+target 'KDSocialLoginManager_Example' do
+  pod 'KDSocialLoginManager', :path => '../'
+
+  target 'KDSocialLoginManager_Tests' do
+    inherit! :search_paths
+  end
+end
