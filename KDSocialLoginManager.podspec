@@ -17,9 +17,7 @@ Pod::Spec.new do |s|
 #   * Write the description between the DESC delimiters below.
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
-  s.description      = <<-DESC
-TODO: Add long description of the pod here.
-                       DESC
+  s.description      = 'POC : This repository holds the social login in iOS with multiple platforms and multiple schemes of login using OAuth 2.0 as well as login with Facebook, LinkedIn, Google directly. One can directly leverage framework as ready reckoner to support multiple social login on any platform.'
 
   s.homepage         = 'https://github.com/kuldeepbhatt/KDSocialLoginManager'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
@@ -29,10 +27,6 @@ TODO: Add long description of the pod here.
   s.ios.deployment_target = '9.0'
 
   s.source_files = 'KDSocialLoginManager/Classes/**/*'
-
-  s.resource_bundles = {
-     'KDSocialLoginManager' => ['KDSocialLoginManager/Assets/*.png']
-  }
 
   s.xcconfig = {
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64'
