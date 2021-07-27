@@ -5,3 +5,9 @@ public enum Platform: String {
     case OTP
     case Unknown
 }
+
+public enum Type: String {
+    case OAuth
+    case SDK
+    case Unknown
+}

@@ -12,8 +12,6 @@ import SafariServices
 
 @available(iOS 11.0, *)
 class ViewController: UIViewController {
-
-    var authSession: SFAuthenticationSession?
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -22,6 +20,11 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+        /**
+         Google client details :
+         651532769644-qs1c47uev52rit58rgt9g1658iphks27.apps.googleusercontent.com
+         651532769644-qs1c47uev52rit58rgt9g1658iphks27.apps.googleusercontent.com
+         */
     }
 
 }
@@ -30,28 +33,24 @@ class ViewController: UIViewController {
 @available(iOS 11.0, *)
 extension ViewController {
     @IBAction func fbLogin() {
-        var loginManager = LoginManager(with: "183170133853832",
-                                        viewController: self,
-                                 redirectURI: URL(string: "https://www.google.com"))
-        loginManager.oAuthLogin(with: .Facebook) { token, error in
+        LoginHandler.shared.facebookLogin(with: ["email", "public_profile"],
+                                     presentingViewController: self) { result, error in
             if error != nil {
-                print("Error occured: ", error?.localizedDescription ?? "")
+                print("Error while Facebook login : \(String(describing: error?.localizedDescription))")
                 return
             }
-            print("FB Login successfull")
+            print("Facebook Login successfull: \(String(describing: result))")
         }
     }
     
     @IBAction func googleLogin() {
-        var loginManager = LoginManager(with: "183170133853832",
-                                        viewController: self,
-                                        redirectURI: URL(string: "https://www.google.com"))
-        loginManager.oAuthLogin(with: .Google) { token, error in
+        LoginHandler.shared.googleLogin(with: "651532769644-qs1c47uev52rit58rgt9g1658iphks27.apps.googleusercontent.com",
+                                        presentingViewController: self) { user, error in
             if error != nil {
-                print("Error occured: ", error?.localizedDescription ?? "")
+                print("Error while Google login : \(String(describing: error?.localizedDescription))")
                 return
             }
-            print("FB Login successfull")
+            print("Google Login successfull: \(String(describing: user?.description))")
         }
     }
     

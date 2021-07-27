@@ -1,68 +1,92 @@
 //
-//  LoginManager.swift
-//  KDSocialLoginManager
+//  LoginHandler.swift
+//  KDSocialLoginHandler
 //
 //  Created by Kuldeep Bhatt on 2021/07/21.
 //
 
 import Foundation
 import AppAuth
+import FBSDKLoginKit
+import GoogleSignIn
 
-public class LoginManager: NSObject {
+public class LoginHandler: NSObject {
+
+    public static let shared = LoginHandler()
+
     public typealias AuthenticationCompletionHandler = ((String?, Error?) -> Void)
     private var currentAuthorizationFlow: OIDExternalUserAgentSession?
-    private let presentingViewController: UIViewController
-    private let redirectURI: URL?
-    private let clientId: String
-
-    public init(with clientId: String,
-         viewController: UIViewController,
-         redirectURI: URL?) {
-        self.clientId = clientId
-        self.presentingViewController = viewController
-        self.redirectURI = redirectURI
-    }
-
-    public func oAuthLogin(with platform: Platform,
-                      completionHandler: @escaping AuthenticationCompletionHandler) {
+    public func loginWithOAuth(for platform: Platform,
+                               clientID: String,
+                               redirectURI: URL?,
+                               with presentingViewController: UIViewController,
+                               completionHandler: @escaping AuthenticationCompletionHandler) {
         switch platform {
             case .Facebook:
                 AuthConfiguration.shared.discoverServiceConfiguration(for: .Facebook) { [weak self] serviceConfiguration, error in
-                guard let serviceConfiguration = serviceConfiguration else { return }
-                let strongSelf = self
-                    self?.authenticate(from: strongSelf?.presentingViewController ?? UIViewController(),
-                                   serviceConfiguration: serviceConfiguration,
-                                   redirectURI: strongSelf?.redirectURI,
-                                   clientId: strongSelf?.clientId,
-                                   completionHandler: completionHandler)
-            }
+                    guard let serviceConfiguration = serviceConfiguration else { return }
+                    let strongSelf = self
+                    self?.authenticate(from: presentingViewController,
+                                       serviceConfiguration: serviceConfiguration,
+                                       redirectURI: redirectURI,
+                                       clientId: clientID,
+                                       completionHandler: completionHandler)
+                }
             case .LinkedIn:
                 AuthConfiguration.shared.discoverServiceConfiguration(for: .LinkedIn) { [weak self] serviceConfiguration, error in
                     guard let serviceConfiguration = serviceConfiguration else { return }
                     let strongSelf = self
-                    self?.authenticate(from: strongSelf?.presentingViewController ?? UIViewController(),
+                    self?.authenticate(from: presentingViewController,
                                        serviceConfiguration: serviceConfiguration,
-                                       redirectURI: strongSelf?.redirectURI,
-                                       clientId: strongSelf?.clientId,
+                                       redirectURI: redirectURI,
+                                       clientId: clientID,
                                        completionHandler: completionHandler)
                 }
             case .Google:
                 AuthConfiguration.shared.discoverServiceConfiguration(for: .Google) { [weak self] serviceConfiguration, error in
                     guard let serviceConfiguration = serviceConfiguration else { return }
                     let strongSelf = self
-                    strongSelf?.authenticate(from: strongSelf?.presentingViewController ?? UIViewController(),
-                                       serviceConfiguration: serviceConfiguration,
-                                       redirectURI: strongSelf?.redirectURI,
-                                       clientId: strongSelf?.clientId,
-                                       completionHandler: completionHandler)
+                    strongSelf?.authenticate(from: presentingViewController,
+                                             serviceConfiguration: serviceConfiguration,
+                                             redirectURI: redirectURI,
+                                             clientId: clientID,
+                                             completionHandler: completionHandler)
                 }
             default:break;
         }
     }
 }
 
+// MARK: Login with SDKs
+public extension LoginHandler {
+
+    public func facebookLogin(with readPerms: [String],
+                              presentingViewController: UIViewController,
+                              completionHandler: @escaping  AuthenticationCompletionHandler) {
+        LoginManager().logIn(permissions: readPerms, from: presentingViewController) { loginResult, error in
+            let tokenString = loginResult?.token?.tokenString
+            tokenString != nil ? completionHandler(tokenString, nil) : completionHandler(nil, error)
+        }
+    }
+
+    public func googleLogin(with clientID: String,
+                            presentingViewController: UIViewController,
+                            completionHandler: @escaping  GIDSignInCallback) {
+        let signInConfig = GIDConfiguration(clientID: clientID)
+        GIDSignIn.sharedInstance.signIn(
+            with: signInConfig,
+            presenting: presentingViewController
+        ) { user, error in
+            guard error == nil else { return }
+            guard let user = user else { return }
+            completionHandler(user, error)
+        }
+    }
+}
+
+
 //MARK: Auth Requests
-private extension LoginManager {
+private extension LoginHandler {
     /// Performs the full login authorization flow from the supplied viewcontroller. A valid service configuration is required, either through init
     /// or via discovery.
     ///
@@ -88,7 +112,7 @@ private extension LoginManager {
                                               additionalParameters: nil)
         
         currentAuthorizationFlow = OIDAuthState.authState(byPresenting: request,
-                                                          presenting: self.presentingViewController,
+                                                          presenting: viewController,
                                                           callback: { [weak self] (state, error) in
                                                             completionHandler(state?.lastTokenResponse?.accessToken, error)
                                                           })
