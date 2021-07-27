@@ -53,7 +53,7 @@ class AuthConfiguration {
             tokenEndpoint = self.url(for: OAuthUrls.oAuthGoogleTokenEndpoint)
             case .LinkedIn:
             authorizationEndpoint = self.url(for: OAuthUrls.oAuthLinkedInEndpoint)
-            tokenEndpoint = self.url(for: OAuthUrls.oAuthLinkedInEndpoint)
+            tokenEndpoint = self.url(for: OAuthUrls.oAuthLinkedTokenEndpoint)
             default:break
         }
         guard let authEndpoint = authorizationEndpoint,

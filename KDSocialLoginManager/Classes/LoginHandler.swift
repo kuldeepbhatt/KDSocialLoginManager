@@ -25,7 +25,6 @@ public class LoginHandler: NSObject {
             case .Facebook:
                 AuthConfiguration.shared.discoverServiceConfiguration(for: .Facebook) { [weak self] serviceConfiguration, error in
                     guard let serviceConfiguration = serviceConfiguration else { return }
-                    let strongSelf = self
                     self?.authenticate(from: presentingViewController,
                                        serviceConfiguration: serviceConfiguration,
                                        redirectURI: redirectURI,
@@ -35,7 +34,6 @@ public class LoginHandler: NSObject {
             case .LinkedIn:
                 AuthConfiguration.shared.discoverServiceConfiguration(for: .LinkedIn) { [weak self] serviceConfiguration, error in
                     guard let serviceConfiguration = serviceConfiguration else { return }
-                    let strongSelf = self
                     self?.authenticate(from: presentingViewController,
                                        serviceConfiguration: serviceConfiguration,
                                        redirectURI: redirectURI,
@@ -45,8 +43,7 @@ public class LoginHandler: NSObject {
             case .Google:
                 AuthConfiguration.shared.discoverServiceConfiguration(for: .Google) { [weak self] serviceConfiguration, error in
                     guard let serviceConfiguration = serviceConfiguration else { return }
-                    let strongSelf = self
-                    strongSelf?.authenticate(from: presentingViewController,
+                    self?.authenticate(from: presentingViewController,
                                              serviceConfiguration: serviceConfiguration,
                                              redirectURI: redirectURI,
                                              clientId: clientID,
@@ -60,7 +57,7 @@ public class LoginHandler: NSObject {
 // MARK: Login with SDKs
 public extension LoginHandler {
 
-    public func facebookLogin(with readPerms: [String],
+    func facebookLogin(with readPerms: [String],
                               presentingViewController: UIViewController,
                               completionHandler: @escaping  AuthenticationCompletionHandler) {
         LoginManager().logIn(permissions: readPerms, from: presentingViewController) { loginResult, error in
@@ -69,7 +66,7 @@ public extension LoginHandler {
         }
     }
 
-    public func googleLogin(with clientID: String,
+    func googleLogin(with clientID: String,
                             presentingViewController: UIViewController,
                             completionHandler: @escaping  GIDSignInCallback) {
         let signInConfig = GIDConfiguration(clientID: clientID)
@@ -80,6 +77,15 @@ public extension LoginHandler {
             guard error == nil else { return }
             guard let user = user else { return }
             completionHandler(user, error)
+        }
+    }
+
+    func logout(from platform: Platform) {
+        switch platform {
+        case .Facebook: LoginManager().logOut()
+        case .Google: GIDSignIn.sharedInstance.signOut()
+        case .LinkedIn: break
+        default: break
         }
     }
 }
@@ -118,7 +124,7 @@ private extension LoginHandler {
                                                           })
     }
 
-    public func resumeExternalUserAgentFlow(with url: URL) {
+    func resumeExternalUserAgentFlow(with url: URL) {
         guard let flow = currentAuthorizationFlow else {
             return
         }
